@@ -4,27 +4,40 @@ const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8080 });
 
 // Almacenamos las conexiones de los clientes
-const clients = new Set();
+const clients = new Map();
 
-// Función para enviar un mensaje a todos los clientes conectados
-const broadcast = (message) => {
-  clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(message);
-    }
-  });
+// Función para enviar un mensaje a un cliente específico
+const messageOne = (clientId, message) => {
+  const client = clients.get(clientId);
+  if (client && client.readyState === WebSocket.OPEN) {
+    client.send(message);
+  }
 };
 
 // Evento que se ejecuta cuando un cliente se conecta al servidor WebSocket
 wss.on('connection', (ws) => {
   // Agregamos el cliente a la lista de clientes conectados
-  console.log("cliente agregado correctamente...");
-  clients.add(ws);
+  console.log("Cliente agregado correctamente...");
+  clients.set(ws, ws);
 
   // Evento que se ejecuta cuando se recibe un mensaje del cliente
   ws.on('message', (message) => {
-    // Enviamos el mensaje a todos los demás clientes conectados
-    broadcast(message);
+    try {
+      const { type, data, clientId } = JSON.parse(message);
+
+      if (type === "register") {
+        // Asignar datos al cliente
+        const client = clients.get(ws);
+        if (client) {
+          clients.set(ws, { id: clientId, data });
+        }
+      } else if (type === "message") {
+        // Enviar mensaje al cliente de destino
+        messageOne(clientId, data);
+      }
+    } catch (error) {
+      console.error('Error al analizar el mensaje:', error);
+    }
   });
 
   // Evento que se ejecuta cuando el cliente se desconecta
