@@ -20,6 +20,9 @@ wss.on('connection', (ws) => {
   console.log("Cliente agregado correctamente...");
   clients.set(ws, ws);
 
+  // Enviamos un mensaje de bienvenida al cliente recién conectado
+  ws.send("¡Bienvenido al servidor WebSocket!");
+
   // Evento que se ejecuta cuando se recibe un mensaje del cliente
   ws.on('message', (message) => {
     try {
