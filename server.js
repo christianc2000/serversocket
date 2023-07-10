@@ -27,10 +27,7 @@ wss.on('connection', (ws) => {
 
       if (type === "register") {
         // Asignar datos al cliente
-        const client = clients.get(ws);
-        if (client) {
-          clients.set(ws, { id: clientId, data });
-        }
+        clients.set(ws, { id: clientId, data });
       } else if (type === "message") {
         // Enviar mensaje al cliente de destino
         messageOne(clientId, data);
